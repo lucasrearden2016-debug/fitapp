@@ -16,6 +16,8 @@ export async function generateJSON({ system, prompt, schema, temperature = 0.7 }
       responseMimeType: 'application/json',
       responseSchema: schema,
       temperature,
+      // Sin "thinking": mucho más rápido y alcanza para planes y rutinas
+      thinkingConfig: { thinkingBudget: 0 },
     },
   });
   try {
