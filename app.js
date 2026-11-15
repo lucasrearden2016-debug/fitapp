@@ -13,7 +13,11 @@ import workoutRoutes from './routes/workout.routes.js';
 const app = express();
 
 app.set('trust proxy', 1); // Vercel va detrás de proxy (necesario para rate-limit por IP)
-app.use(cors({ origin: process.env.CORS_ORIGIN?.split(',') ?? '*' }));
+const origins = (process.env.CORS_ORIGIN ?? '')
+  .split(',')
+  .map((o) => o.trim().replace(/\/$/, ''))
+  .filter(Boolean);
+app.use(cors({ origin: origins.length === 0 || origins.includes('*') ? '*' : origins }));
 app.use(express.json({ limit: '1mb' }));
 
 // Conexión a Mongo cacheada (sirve tanto en local como en serverless)
