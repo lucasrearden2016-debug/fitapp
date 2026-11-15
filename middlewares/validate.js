@@ -1,8 +1,8 @@
-import sanitizeHtml from 'sanitize-html';
+// Quita etiquetas HTML de todos los strings del body (recursivo)
+const stripTags = (s) => s.replace(/<[^>]*>/g, '').trim();
 
-// Limpia HTML de todos los strings del body (recursivo)
 function sanitize(value) {
-  if (typeof value === 'string') return sanitizeHtml(value, { allowedTags: [], allowedAttributes: {} }).trim();
+  if (typeof value === 'string') return stripTags(value);
   if (Array.isArray(value)) return value.map(sanitize);
   if (value && typeof value === 'object') {
     return Object.fromEntries(Object.entries(value).map(([k, v]) => [k, sanitize(v)]));
