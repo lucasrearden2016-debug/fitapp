@@ -28,7 +28,7 @@ app.use(async (_req, _res, next) => {
 
 app.use(generalLimiter);
 
-app.get('/api/health', (_req, res) => res.json({ ok: true }));
+app.get('/api/health', (_req, res) => res.json({ ok: true, cors: origins }));
 app.use('/api/auth', authRoutes);
 app.use('/api/profile', profileRoutes);
 app.use('/api/mealplans', mealPlanRoutes);
