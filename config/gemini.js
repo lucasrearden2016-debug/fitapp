@@ -1,6 +1,7 @@
 import { GoogleGenAI } from '@google/genai';
 
-export const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+// v1beta: la v1 no soporta systemInstruction ni responseSchema
+export const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY, apiVersion: 'v1beta' });
 export const MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
 
 /**
