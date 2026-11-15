@@ -3,12 +3,16 @@ import * as c from '../controllers/mealPlan.controller.js';
 import { auth } from '../middlewares/auth.js';
 import { validate } from '../middlewares/validate.js';
 import { aiLimiter } from '../middlewares/rateLimit.js';
-import { generatePlanSchema } from '../validators/index.js';
+import { generatePlanSchema, eatenSchema, swapSchema, replaceMealSchema, fridgeSchema } from '../validators/index.js';
 
 const router = Router();
 router.use(auth);
 router.get('/current', c.getCurrent);
 router.get('/history', c.history);
 router.post('/generate', aiLimiter, validate(generatePlanSchema), c.generate);
+router.post('/fridge', aiLimiter, validate(fridgeSchema), c.fridge);
 router.get('/:planId/meals/:mealId/recipe', aiLimiter, c.getRecipe);
+router.patch('/:planId/meals/:mealId', validate(eatenSchema), c.setEaten);
+router.post('/:planId/meals/:mealId/swap', aiLimiter, validate(swapSchema), c.swap);
+router.put('/:planId/meals/:mealId', validate(replaceMealSchema), c.replace);
 export default router;

@@ -78,3 +78,42 @@ export const newRoutineSchema = Joi.object({
   name: Joi.string().max(80).allow(''),
   days: Joi.array().items(day).max(7),
 });
+
+// ---------- Comidas ----------
+const ingredientIn = Joi.object({
+  name: Joi.string().max(80).required(),
+  amount: Joi.number().min(0).max(5000).allow(null),
+  unit: Joi.string().max(20).allow(''),
+  quantity: Joi.string().max(40).allow(''),
+  section: Joi.string().max(40).allow(''),
+});
+
+const mealIn = Joi.object({
+  type: Joi.string().max(40).allow(''),
+  name: Joi.string().max(120).required(),
+  description: Joi.string().max(500).allow(''),
+  ingredients: Joi.array().items(ingredientIn).max(30).default([]),
+  calories: Joi.number().min(0).max(5000).required(),
+  protein: Joi.number().min(0).max(500).required(),
+  carbs: Joi.number().min(0).max(800).required(),
+  fat: Joi.number().min(0).max(400).required(),
+  recipe: Joi.object({
+    timeMinutes: Joi.number().min(0).max(600),
+    steps: Joi.array().items(Joi.string().max(600)).max(30),
+    tips: Joi.string().max(600).allow(''),
+  }),
+});
+
+export const eatenSchema = Joi.object({ eaten: Joi.boolean().required() });
+export const swapSchema = Joi.object({ hint: Joi.string().max(200).allow('') });
+export const replaceMealSchema = Joi.object({ meal: mealIn.required() });
+export const favoriteSchema = Joi.object({ meal: mealIn.required() });
+export const fridgeSchema = Joi.object({
+  ingredients: Joi.array().items(Joi.string().max(60)).min(1).max(30).required(),
+  type: Joi.string().max(40).required(),
+  note: Joi.string().max(200).allow(''),
+});
+export const weightSchema = Joi.object({
+  weightKg: Joi.number().min(30).max(300).required(),
+  date: Joi.date().max('now'),
+});

@@ -1,57 +1,7 @@
 import { Type } from '@google/genai';
 import { generateJSON } from '../config/gemini.js';
 
-const DAYS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
-
 // ---------- Schemas de salida (Gemini responde JSON con esta forma) ----------
-
-const mealOut = {
-  type: Type.OBJECT,
-  properties: {
-    type: { type: Type.STRING },
-    name: { type: Type.STRING },
-    description: { type: Type.STRING },
-    ingredients: {
-      type: Type.ARRAY,
-      items: {
-        type: Type.OBJECT,
-        properties: { name: { type: Type.STRING }, quantity: { type: Type.STRING } },
-        required: ['name', 'quantity'],
-      },
-    },
-    calories: { type: Type.NUMBER },
-    protein: { type: Type.NUMBER },
-    carbs: { type: Type.NUMBER },
-    fat: { type: Type.NUMBER },
-  },
-  required: ['type', 'name', 'ingredients', 'calories', 'protein', 'carbs', 'fat'],
-};
-
-const mealPlanOut = {
-  type: Type.OBJECT,
-  properties: {
-    days: {
-      type: Type.ARRAY,
-      items: {
-        type: Type.OBJECT,
-        properties: { day: { type: Type.STRING }, meals: { type: Type.ARRAY, items: mealOut } },
-        required: ['day', 'meals'],
-      },
-    },
-    shoppingList: { type: Type.ARRAY, items: { type: Type.STRING } },
-  },
-  required: ['days', 'shoppingList'],
-};
-
-const recipeOut = {
-  type: Type.OBJECT,
-  properties: {
-    timeMinutes: { type: Type.NUMBER },
-    steps: { type: Type.ARRAY, items: { type: Type.STRING } },
-    tips: { type: Type.STRING },
-  },
-  required: ['timeMinutes', 'steps'],
-};
 
 const routineOut = {
   type: Type.OBJECT,
@@ -96,39 +46,9 @@ const reviewOut = {
 
 // ---------- Prompts ----------
 
-const NUTRI_SYSTEM = `Sos un nutricionista que arma planes semanales prácticos, en español rioplatense.
-Respetás estrictamente restricciones y alergias. Priorizás comidas que al usuario le gustan y sabe cocinar,
-pero introducís variedad. Usás ingredientes accesibles y reutilizás ingredientes entre días para reducir desperdicio.
-Las cantidades van en gramos o unidades caseras. Los macros de cada comida deben ser realistas.`;
-
 const COACH_SYSTEM = `Sos un entrenador personal certificado. Diseñás rutinas seguras, basadas en evidencia
 (sobrecarga progresiva, volumen adecuado por grupo muscular, frecuencia 2x por músculo cuando se puede).
 Respetás lesiones y el equipamiento disponible. Respondés en español rioplatense.`;
-
-export async function generateMealPlan(user, targets, feedback) {
-  const p = user.profile;
-  const liked = user.foods.filter((f) => f.liked).map((f) => `${f.name}${f.canCook ? ' (sabe cocinarlo)' : ''}`);
-  const disliked = user.foods.filter((f) => !f.liked).map((f) => f.name);
-
-  const prompt = `Armá un plan de comidas de 7 días (${DAYS.join(', ')}).
-Objetivo diario aproximado: ${targets.calories} kcal, ${targets.protein} g proteína, ${targets.carbs} g carbohidratos, ${targets.fat} g grasa.
-Comidas por día: ${p.mealsPerDay}.
-Restricciones/alergias: ${p.restrictions?.join(', ') || 'ninguna'}.
-Le gusta: ${liked.join(', ') || 'sin datos'}.
-NO le gusta / evitar: ${disliked.join(', ') || 'nada'}.
-Nivel de cocina: ${p.cookingSkill}. Tiempo máximo por comida: ${p.maxCookingMinutes} min. Presupuesto: ${p.budget}.
-${feedback ? `Pedido del usuario para esta semana: "${feedback}"` : ''}
-Incluí también una lista de compras consolidada para la semana.`;
-
-  return generateJSON({ system: NUTRI_SYSTEM, prompt, schema: mealPlanOut });
-}
-
-export async function generateRecipe(meal, user) {
-  const prompt = `Escribí la receta paso a paso para "${meal.name}" (${meal.description ?? ''}).
-Ingredientes: ${meal.ingredients.map((i) => `${i.quantity} ${i.name}`).join(', ')}.
-Nivel de cocina del usuario: ${user.profile.cookingSkill}. Pasos cortos y claros.`;
-  return generateJSON({ system: NUTRI_SYSTEM, prompt, schema: recipeOut, temperature: 0.4 });
-}
 
 export async function generateRoutine(user) {
   const g = user.gym;

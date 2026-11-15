@@ -1,22 +1,27 @@
 import User from '../models/User.js';
-import { calculateTargets } from '../services/nutrition.js';
+import WeightLog from '../models/WeightLog.js';
+import { calculateTargets, evaluateWeight } from '../services/nutrition.js';
+import { startOfDayUTC } from '../services/progress.js';
+
+const targetsOf = (user) => (user.onboarded ? calculateTargets(user.profile, user.nutrition?.calorieAdjustment ?? 0) : null);
 
 export async function getProfile(req, res) {
   const user = await User.findById(req.user.id).lean();
   if (!user) return res.status(404).json({ message: 'Usuario no encontrado' });
-  const targets = user.onboarded ? calculateTargets(user.profile) : null;
-  res.json({ ...user, targets });
+  res.json({ ...user, targets: targetsOf(user) });
 }
 
 // Encuesta principal (también sirve para editarla después)
 export async function saveOnboarding(req, res) {
   const { profile, foods, gym } = req.body;
-  const user = await User.findByIdAndUpdate(
-    req.user.id,
-    { profile, foods, ...(gym && { gym }), onboarded: true },
-    { returnDocument: 'after', runValidators: true }
-  ).lean();
-  res.json({ ...user, targets: calculateTargets(user.profile) });
+  const prev = await User.findById(req.user.id).select('profile.goal').lean();
+  const update = { profile, foods, ...(gym && { gym }), onboarded: true };
+  // Si cambia el objetivo, el ajuste por peso arranca de cero
+  if (prev?.profile?.goal && prev.profile.goal !== profile.goal) {
+    update.nutrition = { calorieAdjustment: 0, lastAdjustmentAt: null, lastRate: null, lastMessage: null };
+  }
+  const user = await User.findByIdAndUpdate(req.user.id, update, { returnDocument: 'after', runValidators: true }).lean();
+  res.json({ ...user, targets: targetsOf(user) });
 }
 
 // Agregar comidas a medida que usa la app
@@ -36,4 +41,77 @@ export async function removeFood(req, res) {
     { returnDocument: 'after' }
   );
   res.json(user.foods);
+}
+
+// ---------- Favoritas ----------
+
+export async function addFavorite(req, res) {
+  const user = await User.findById(req.user.id);
+  const { meal } = req.body;
+  if (!user.favorites.some((f) => f.name.toLowerCase() === meal.name.toLowerCase())) {
+    user.favorites.push(meal);
+    await user.save();
+  }
+  res.status(201).json(user.favorites);
+}
+
+export async function removeFavorite(req, res) {
+  const user = await User.findByIdAndUpdate(
+    req.user.id,
+    { $pull: { favorites: { _id: req.params.favId } } },
+    { returnDocument: 'after' }
+  );
+  res.json(user.favorites);
+}
+
+// ---------- Peso ----------
+
+async function weightResponse(user) {
+  const logs = await WeightLog.find({ user: user._id }).sort({ date: 1 }).select('date weightKg -_id').lean();
+  const goal = user.profile?.goal;
+  return {
+    logs,
+    goal,
+    targets: targetsOf(user),
+    adjustment: user.nutrition?.calorieAdjustment ?? 0,
+    rate: user.nutrition?.lastRate ?? null,
+    message: user.nutrition?.lastMessage ?? evaluateWeight(logs, goal).message,
+    expected: evaluateWeight([], goal).expected,
+  };
+}
+
+export async function getWeights(req, res) {
+  const user = await User.findById(req.user.id);
+  res.json(await weightResponse(user));
+}
+
+// Registrar peso (uno por día) y, si corresponde, ajustar calorías
+export async function addWeight(req, res) {
+  const user = await User.findById(req.user.id);
+  const date = startOfDayUTC(req.body.date ? new Date(req.body.date) : new Date());
+  await WeightLog.findOneAndUpdate(
+    { user: user._id, date },
+    { weightKg: req.body.weightKg },
+    { upsert: true, returnDocument: 'after' }
+  );
+
+  const logs = await WeightLog.find({ user: user._id }).sort({ date: 1 }).lean();
+  user.profile.weightKg = logs.at(-1).weightKg; // el peso actual alimenta BMR y proteína
+
+  const n = user.nutrition ?? {};
+  const result = evaluateWeight(logs, user.profile.goal, n.calorieAdjustment ?? 0, n.lastAdjustmentAt);
+  user.nutrition = {
+    calorieAdjustment: (n.calorieAdjustment ?? 0) + result.change,
+    lastAdjustmentAt: result.change ? new Date() : n.lastAdjustmentAt,
+    lastRate: result.rate,
+    lastMessage: result.message,
+  };
+  await user.save();
+  res.status(201).json({ ...(await weightResponse(user)), change: result.change });
+}
+
+export async function removeWeight(req, res) {
+  await WeightLog.deleteOne({ user: req.user.id, date: startOfDayUTC(new Date(req.params.date)) });
+  const user = await User.findById(req.user.id);
+  res.json(await weightResponse(user));
 }

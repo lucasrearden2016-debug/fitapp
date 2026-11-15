@@ -7,12 +7,24 @@ const macros = {
   fat: Number,
 };
 
-const mealSchema = new mongoose.Schema({
-  type: String, // desayuno, almuerzo, merienda, cena, snack
+const ingredientSchema = new mongoose.Schema(
+  {
+    name: String,
+    amount: Number, // numérico, para poder escalar porciones
+    unit: String, // g | ml | unidad | cda | cdita | taza | a gusto
+    quantity: String, // texto para mostrar: "180 g", "2 unidades"
+    section: String, // sección del súper
+  },
+  { _id: false }
+);
+
+export const mealSchema = new mongoose.Schema({
+  type: String, // desayuno, almuerzo, merienda, cena, colación...
   name: String,
   description: String,
-  ingredients: [{ name: String, quantity: String, _id: false }],
+  ingredients: [ingredientSchema],
   ...macros,
+  eaten: { type: Boolean, default: false },
   // La receta se genera a demanda (ahorra tokens) y queda cacheada acá
   recipe: {
     timeMinutes: Number,
@@ -33,10 +45,17 @@ const mealPlanSchema = new mongoose.Schema(
         _id: false,
       },
     ],
-    shoppingList: [String],
+    shoppingList: [{ item: String, section: String, _id: false }],
     feedback: String, // lo que el usuario pidió cambiar para esta semana
   },
   { timestamps: true }
 );
+
+// Planes viejos: lista de compras como strings
+mealPlanSchema.pre('init', function (raw) {
+  if (Array.isArray(raw?.shoppingList)) {
+    raw.shoppingList = raw.shoppingList.map((s) => (typeof s === 'string' ? { item: s, section: 'Otros' } : s));
+  }
+});
 
 export default mongoose.model('MealPlan', mealPlanSchema);

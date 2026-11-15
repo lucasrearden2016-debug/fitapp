@@ -34,6 +34,28 @@ const userSchema = new mongoose.Schema(
     // Comidas que le gustan / sabe cocinar (se va ampliando con el uso)
     foods: [foodSchema],
 
+    // Ajuste automático de calorías según cómo evoluciona el peso
+    nutrition: {
+      calorieAdjustment: { type: Number, default: 0 },
+      lastAdjustmentAt: Date,
+      lastRate: Number, // % de peso por semana en la última evaluación
+      lastMessage: String,
+    },
+
+    // Comidas marcadas con ⭐ (la IA las repite en próximos planes)
+    favorites: [
+      {
+        name: String,
+        type: { type: String }, // ojo: "type" anidado necesita esta forma
+        description: String,
+        ingredients: [{ name: String, amount: Number, unit: String, quantity: String, section: String, _id: false }],
+        calories: Number,
+        protein: Number,
+        carbs: Number,
+        fat: Number,
+      },
+    ],
+
     gym: {
       experience: { type: String, enum: ['beginner', 'intermediate', 'advanced'] },
       daysPerWeek: Number,
