@@ -30,7 +30,7 @@ export async function generate(req, res) {
   const plan = await MealPlan.findOneAndUpdate(
     { user: user._id, weekStart },
     { targets, days, shoppingList, feedback: req.body.feedback },
-    { upsert: true, new: true, setDefaultsOnInsert: true }
+    { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true }
   );
   res.status(201).json(plan);
 }

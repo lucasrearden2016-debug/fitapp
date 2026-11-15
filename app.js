@@ -8,7 +8,6 @@ import authRoutes from './routes/auth.routes.js';
 import profileRoutes from './routes/profile.routes.js';
 import mealPlanRoutes from './routes/mealPlan.routes.js';
 import routineRoutes from './routes/routine.routes.js';
-import workoutRoutes from './routes/workout.routes.js';
 
 const app = express();
 
@@ -28,12 +27,11 @@ app.use(async (_req, _res, next) => {
 
 app.use(generalLimiter);
 
-app.get('/api/health', (_req, res) => res.json({ ok: true, cors: origins }));
+app.get('/api/health', (_req, res) => res.json({ ok: true }));
 app.use('/api/auth', authRoutes);
 app.use('/api/profile', profileRoutes);
 app.use('/api/mealplans', mealPlanRoutes);
 app.use('/api/routines', routineRoutes);
-app.use('/api/workouts', workoutRoutes);
 
 app.use(notFound);
 app.use(errorHandler);

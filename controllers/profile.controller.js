@@ -14,7 +14,7 @@ export async function saveOnboarding(req, res) {
   const user = await User.findByIdAndUpdate(
     req.user.id,
     { profile, foods, ...(gym && { gym }), onboarded: true },
-    { new: true, runValidators: true }
+    { returnDocument: 'after', runValidators: true }
   ).lean();
   res.json({ ...user, targets: calculateTargets(user.profile) });
 }
@@ -33,7 +33,7 @@ export async function removeFood(req, res) {
   const user = await User.findByIdAndUpdate(
     req.user.id,
     { $pull: { foods: { _id: req.params.foodId } } },
-    { new: true }
+    { returnDocument: 'after' }
   );
   res.json(user.foods);
 }

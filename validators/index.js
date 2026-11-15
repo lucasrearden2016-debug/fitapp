@@ -48,38 +48,33 @@ export const generatePlanSchema = Joi.object({
   feedback: Joi.string().max(500).allow(''),
 });
 
+// ---------- Gimnasio (tabla editable) ----------
+const series = Joi.object({
+  weightKg: Joi.number().min(0).max(1000).allow(null).default(null),
+  reps: Joi.number().integer().min(0).max(1000).allow(null).default(null),
+  target: Joi.string().max(20).allow('').default(''),
+});
+
 const exercise = Joi.object({
-  name: Joi.string().max(80).required(),
-  sets: Joi.number().integer().min(1).max(20).default(3),
-  reps: Joi.string().max(20).default('8-12'),
-  restSeconds: Joi.number().min(0).max(600).default(90),
-  notes: Joi.string().max(1000).allow(''),
+  name: Joi.string().max(80).allow('').default(''),
+  series: Joi.array().items(series).max(20).default([]),
+  rest: Joi.string().max(20).allow('').default(''),
+  notes: Joi.string().max(1000).allow('').default(''),
 });
 
+const day = Joi.object({
+  name: Joi.string().max(60).required(),
+  columns: Joi.number().integer().min(1).max(20).default(3),
+  exercises: Joi.array().items(exercise).max(40).default([]),
+});
+
+// Autosave: se puede mandar solo el nombre, solo los días o ambos
 export const routineSchema = Joi.object({
-  name: Joi.string().max(80).required(),
-  active: Joi.boolean(),
-  days: Joi.array()
-    .items(Joi.object({ name: Joi.string().max(60).required(), exercises: Joi.array().items(exercise).required() }))
-    .min(1)
-    .required(),
-});
+  name: Joi.string().max(80).allow(''),
+  days: Joi.array().items(day).min(1).max(7),
+}).or('name', 'days');
 
-export const workoutLogSchema = Joi.object({
-  routine: Joi.string().hex().length(24),
-  dayName: Joi.string().max(60),
-  date: Joi.date().default(() => new Date()),
-  notes: Joi.string().max(500).allow(''),
-  entries: Joi.array()
-    .items(
-      Joi.object({
-        exercise: Joi.string().max(80).required(),
-        sets: Joi.array()
-          .items(Joi.object({ reps: Joi.number().min(0).max(100).required(), weightKg: Joi.number().min(0).max(1000).required() }))
-          .min(1)
-          .required(),
-      })
-    )
-    .min(1)
-    .required(),
+export const newRoutineSchema = Joi.object({
+  name: Joi.string().max(80).allow(''),
+  days: Joi.array().items(day).max(7),
 });

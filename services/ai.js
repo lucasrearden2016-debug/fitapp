@@ -140,19 +140,34 @@ Un día de entrenamiento por cada día pedido. Incluí notas de técnica breves 
   return generateJSON({ system: COACH_SYSTEM, prompt, schema: routineOut });
 }
 
+const fmtSet = (s) =>
+  s.reps ? (s.weightKg ? `${s.weightKg}kg×${s.reps}` : `${s.reps} reps`) : s.target ? `objetivo ${s.target} reps` : '—';
+
 export async function reviewRoutine(routine, logs, user) {
-  const history = logs
-    .map((l) => `${l.date.toISOString().slice(0, 10)} ${l.dayName}: ` +
-      l.entries.map((e) => `${e.exercise} ${e.sets.map((s) => `${s.weightKg}kg x${s.reps}`).join(', ')}`).join(' | '))
+  const routineText = routine.days
+    .map((d) => `${d.name}:\n` + d.exercises
+      .filter((e) => e.name)
+      .map((e) => `- ${e.name}: ${e.series.map(fmtSet).join(' | ') || 'sin cargar'}` +
+        `${e.rest ? ` · descanso ${e.rest}` : ''}${e.notes ? ` · nota del usuario: "${e.notes}"` : ''}`)
+      .join('\n'))
+    .join('\n\n');
+
+  const history = [...logs]
+    .reverse()
+    .map((l) => `${new Date(l.date).toISOString().slice(0, 10)} ${l.exercise}: ${l.series.map(fmtSet).join(', ')}`)
     .join('\n');
 
-  const prompt = `Revisá esta rutina y el historial reciente y dame recomendaciones concretas para mejorarla.
-Perfil: experiencia ${user.gym?.experience ?? 'desconocida'}, objetivos: ${user.gym?.goals ?? 'no especificados'}, lesiones: ${user.gym?.injuries ?? 'ninguna'}.
-Rutina:
-${JSON.stringify(routine.days)}
-Historial (últimas sesiones):
+  const prompt = `Revisá esta rutina y su historial, y dame recomendaciones concretas para mejorarla.
+Perfil: experiencia ${user.gym?.experience ?? 'desconocida'}, objetivos: ${user.gym?.goals || 'no especificados'}, lesiones: ${user.gym?.injuries || 'ninguna'}.
+
+Rutina actual (formato peso×reps por serie):
+${routineText}
+
+Historial de cambios (más viejo a más nuevo):
 ${history || 'sin registros todavía'}
-Detectá estancamientos, desbalances entre grupos musculares y volumen excesivo o insuficiente.
-Sugerí progresiones de peso concretas cuando corresponda.`;
+
+Tené en cuenta las notas del usuario (ej. "la próxima subo"). Detectá estancamientos, desbalances entre grupos
+musculares, volumen excesivo o insuficiente y ejercicios sin progresión. Sugerí pesos concretos para la próxima sesión
+cuando corresponda. Máximo 6 sugerencias, cortas y accionables.`;
   return generateJSON({ system: COACH_SYSTEM, prompt, schema: reviewOut, temperature: 0.5 });
 }
