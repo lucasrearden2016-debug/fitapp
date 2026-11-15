@@ -106,7 +106,14 @@ const mealIn = Joi.object({
 
 export const eatenSchema = Joi.object({ eaten: Joi.boolean().required() });
 export const swapSchema = Joi.object({ hint: Joi.string().max(200).allow('') });
-export const replaceMealSchema = Joi.object({ meal: mealIn.required() });
+export const replaceMealSchema = Joi.object({ meal: mealIn.required(), fit: Joi.boolean().default(true) });
+export const addMealSchema = Joi.object({ meal: mealIn.required() });
+export const suggestSchema = Joi.object({ type: Joi.string().max(40).required() });
+export const estimateSchema = Joi.object({
+  name: Joi.string().max(120).required(),
+  description: Joi.string().max(500).allow(''),
+  ingredients: Joi.array().items(ingredientIn).max(30).default([]),
+});
 export const favoriteSchema = Joi.object({ meal: mealIn.required() });
 export const fridgeSchema = Joi.object({
   ingredients: Joi.array().items(Joi.string().max(60)).min(1).max(30).required(),

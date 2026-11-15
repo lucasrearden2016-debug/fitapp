@@ -133,3 +133,29 @@ Ingredientes: ${meal.ingredients.map((i) => `${i.quantity} ${i.name}`).join(', '
 Nivel de cocina del usuario: ${user.profile.cookingSkill}. Pasos cortos y claros. Respetá las cantidades.`;
   return generateJSON({ system: SYSTEM, prompt, schema: recipeOut, temperature: 0.4 });
 }
+
+// Estima macros de una comida cargada a mano (no cambia las cantidades)
+const estimateOut = {
+  type: Type.OBJECT,
+  properties: {
+    calories: { type: Type.NUMBER },
+    protein: { type: Type.NUMBER },
+    carbs: { type: Type.NUMBER },
+    fat: { type: Type.NUMBER },
+    ingredients: { type: Type.ARRAY, items: ingredientOut },
+  },
+  required: ['calories', 'protein', 'carbs', 'fat', 'ingredients'],
+};
+
+export async function estimateMeal({ name, description, ingredients }) {
+  const list = ingredients.length
+    ? ingredients.map((i) => `- ${i.amount ? `${i.amount} ${i.unit ?? ''}` : 'a gusto'} ${i.name}`).join('\n')
+    : '(no indicó ingredientes: estimá una porción estándar de un adulto y listá los ingredientes típicos)';
+  const prompt = `Estimá los macros de esta comida usando tablas nutricionales estándar.
+Comida: ${name}${description ? ` — ${description}` : ''}
+Ingredientes:
+${list}
+Devolvé los mismos ingredientes con sus mismas cantidades (no las cambies) agregando la sección del súper.
+Calorías ≈ 4·proteína + 4·carbos + 9·grasas.`;
+  return generateJSON({ system: SYSTEM, prompt, schema: estimateOut, temperature: 0.2 });
+}

@@ -215,3 +215,24 @@ export function evaluateWeight(logs, goal, currentAdjustment = 0, lastAdjustment
 
   return { rate, expected, change, message };
 }
+
+// Normaliza una comida cargada a mano: texto de cantidades y números redondos
+export function normalizeMeal(meal) {
+  const r = (v) => Math.round(Number(v) || 0);
+  return {
+    ...meal,
+    calories: r(meal.calories),
+    protein: r(meal.protein),
+    carbs: r(meal.carbs),
+    fat: r(meal.fat),
+    ingredients: (meal.ingredients ?? [])
+      .filter((i) => i.name?.trim())
+      .map((i) => ({
+        name: i.name.trim(),
+        amount: Number(i.amount) || 0,
+        unit: i.unit || (i.amount ? 'g' : 'a gusto'),
+        section: i.section || 'Otros',
+        quantity: formatQuantity(Number(i.amount) || 0, i.unit || (i.amount ? 'g' : 'a gusto')),
+      })),
+  };
+}
