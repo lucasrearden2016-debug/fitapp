@@ -33,12 +33,6 @@ const mealOut = {
   required: ['type', 'name', 'description', 'ingredients', 'calories', 'protein', 'carbs', 'fat'],
 };
 
-const dayOut = {
-  type: Type.OBJECT,
-  properties: { day: { type: Type.STRING }, meals: { type: Type.ARRAY, items: mealOut } },
-  required: ['day', 'meals'],
-};
-
 const recipeProps = {
   timeMinutes: { type: Type.NUMBER },
   steps: { type: Type.ARRAY, items: { type: Type.STRING } },
@@ -53,6 +47,13 @@ const mealWithRecipeOut = {
   required: [...mealOut.required, 'recipe'],
 };
 
+// Cada comida del plan ya trae su receta: así abrir una receta no gasta otra llamada
+const dayOut = {
+  type: Type.OBJECT,
+  properties: { day: { type: Type.STRING }, meals: { type: Type.ARRAY, items: mealWithRecipeOut } },
+  required: ['day', 'meals'],
+};
+
 // ---------- Contexto común ----------
 
 const SYSTEM = `Sos un nutricionista deportivo que arma comidas prácticas y ricas, en español rioplatense.
@@ -61,7 +62,8 @@ Reglas:
 - Cada comida debe acercarse a SU objetivo de macros (±10%). Para subir proteína usá carnes magras, huevo, lácteos, legumbres, atún.
 - Las cantidades son numéricas y realistas: gramos o ml para casi todo; "unidad" solo para cosas contables (huevos, frutas, panes).
 - Los macros de cada comida tienen que corresponder a sus ingredientes y cantidades (calorías ≈ 4·proteína + 4·carbos + 9·grasas).
-- Ingredientes accesibles en Uruguay/Argentina; reutilizás ingredientes entre días para reducir desperdicio.`;
+- Ingredientes accesibles en Uruguay/Argentina; reutilizás ingredientes entre días para reducir desperdicio.
+- Cada comida incluye su receta: 3 a 6 pasos cortos y claros, SIN cantidades (las cantidades ya están en los ingredientes y pueden ajustarse), y el tiempo total en minutos.`;
 
 function profileContext(user) {
   const p = user.profile;
@@ -113,7 +115,7 @@ export async function generateAlternative(user, target, { avoid = [], hint } = {
 ${profileContext(user)}
 Tiene que ser distinta a: ${avoid.join(', ')}.
 ${hint ? `El usuario pide: "${hint}"` : ''}`;
-  return generateJSON({ system: SYSTEM, prompt, schema: mealOut, temperature: 0.9 });
+  return generateJSON({ system: SYSTEM, prompt, schema: mealWithRecipeOut, temperature: 0.9 });
 }
 
 // "¿Qué cocino con lo que tengo?"
