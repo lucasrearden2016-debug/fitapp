@@ -161,3 +161,4 @@ Devolvé los mismos ingredientes con sus mismas cantidades (no las cambies) agre
 Calorías ≈ 4·proteína + 4·carbos + 9·grasas.`;
   return generateJSON({ system: SYSTEM, prompt, schema: estimateOut, temperature: 0.2 });
 }
+

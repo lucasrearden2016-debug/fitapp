@@ -53,6 +53,7 @@ const userSchema = new mongoose.Schema(
         protein: Number,
         carbs: Number,
         fat: Number,
+        recipe: { timeMinutes: Number, steps: [String], tips: String },
       },
     ],
 

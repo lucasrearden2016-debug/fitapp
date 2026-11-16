@@ -1,6 +1,6 @@
 import User from '../models/User.js';
 import WeightLog from '../models/WeightLog.js';
-import { calculateTargets, evaluateWeight } from '../services/nutrition.js';
+import { calculateTargets, evaluateWeight, normalizeMeal } from '../services/nutrition.js';
 import { startOfDayUTC } from '../services/progress.js';
 
 const targetsOf = (user) => (user.onboarded ? calculateTargets(user.profile, user.nutrition?.calorieAdjustment ?? 0) : null);
@@ -45,14 +45,31 @@ export async function removeFood(req, res) {
 
 // ---------- Favoritas ----------
 
+const sameName = (a, b) => a.trim().toLowerCase() === b.trim().toLowerCase();
+
+// Agrega o actualiza (si ya existe una con el mismo nombre) una favorita
+function upsertFavorite(user, meal) {
+  const clean = { ...normalizeMeal(meal), type: meal.type, recipe: meal.recipe };
+  const existing = user.favorites.find((f) => sameName(f.name, clean.name));
+  if (existing) existing.set(clean);
+  else user.favorites.push(clean);
+}
+
 export async function addFavorite(req, res) {
   const user = await User.findById(req.user.id);
-  const { meal } = req.body;
-  if (!user.favorites.some((f) => f.name.toLowerCase() === meal.name.toLowerCase())) {
-    user.favorites.push(meal);
-    await user.save();
-  }
+  upsertFavorite(user, req.body.meal);
+  await user.save();
   res.status(201).json(user.favorites);
+}
+
+export async function updateFavorite(req, res) {
+  const user = await User.findById(req.user.id);
+  const fav = user.favorites.id(req.params.favId);
+  if (!fav) return res.status(404).json({ message: 'Favorita no encontrada' });
+  const meal = req.body.meal;
+  fav.set({ ...normalizeMeal(meal), type: meal.type, recipe: meal.recipe });
+  await user.save();
+  res.json(user.favorites);
 }
 
 export async function removeFavorite(req, res) {
