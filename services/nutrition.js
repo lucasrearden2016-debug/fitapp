@@ -129,6 +129,7 @@ export function formatQuantity(amount, unit) {
   const n = String(amount).replace('.', ',');
   if (!unit) return n;
   if (unit === 'unidad' && amount > 1) return `${n} unidades`;
+  if (amount > 1 && !['g', 'ml', 'cda', 'cdita', 'a gusto'].includes(unit) && !unit.endsWith('s')) return `${n} ${unit}s`;
   return `${n} ${unit}`;
 }
 
@@ -228,6 +229,7 @@ export function normalizeMeal(meal) {
     ingredients: (meal.ingredients ?? [])
       .filter((i) => i.name?.trim())
       .map((i) => ({
+        ...i,
         name: i.name.trim(),
         amount: Number(i.amount) || 0,
         unit: i.unit || (i.amount ? 'g' : 'a gusto'),

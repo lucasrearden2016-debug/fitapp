@@ -1,5 +1,6 @@
 import User from '../models/User.js';
 import WeightLog from '../models/WeightLog.js';
+import { countUses } from './food.controller.js';
 import { calculateTargets, evaluateWeight, normalizeMeal } from '../services/nutrition.js';
 import { startOfDayUTC } from '../services/progress.js';
 
@@ -59,6 +60,7 @@ export async function addFavorite(req, res) {
   const user = await User.findById(req.user.id);
   upsertFavorite(user, req.body.meal);
   await user.save();
+  await countUses([req.body.meal]);
   res.status(201).json(user.favorites);
 }
 

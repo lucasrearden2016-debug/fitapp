@@ -14,6 +14,13 @@ const ingredientSchema = new mongoose.Schema(
     unit: String, // g | ml | unidad | cda | cdita | taza | a gusto
     quantity: String, // texto para mostrar: "180 g", "2 unidades"
     section: String, // sección del súper
+    // Si viene de la base de alimentos: vínculo + copia de los valores por 100 g/ml
+    foodId: { type: mongoose.Schema.Types.ObjectId, ref: 'Food' },
+    brand: String,
+    per100: { calories: Number, protein: Number, carbs: Number, fat: Number },
+    baseUnit: String,
+    unitName: String,
+    unitGrams: Number,
   },
   { _id: false }
 );

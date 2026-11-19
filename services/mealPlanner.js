@@ -1,4 +1,4 @@
-import { balanceDay, mealTargets } from './nutrition.js';
+import { balanceDay, formatQuantity, mealTargets } from './nutrition.js';
 import { generateWeek, regenerateDay, SECTIONS } from './aiMeals.js';
 
 const KEYS = ['calories', 'protein', 'carbs', 'fat'];
@@ -62,7 +62,7 @@ function fmtTotal(amount, unit) {
   if (unit === 'ml') return amount >= 1000 ? `${num(amount / 1000)} L` : `${Math.round(amount / 10) * 10} ml`;
   if (unit === 'unidad') return `x${Math.ceil(amount)}`;
   if (unit === 'a gusto' || !amount) return '';
-  return `${num(amount)} ${unit}`;
+  return formatQuantity(Math.round(amount * 10) / 10, unit);
 }
 
 export function buildShoppingList(days) {
@@ -71,8 +71,9 @@ export function buildShoppingList(days) {
     for (const meal of day.meals) {
       for (const ing of meal.ingredients ?? []) {
         if (!ing.name) continue;
-        const key = `${norm(ing.name)}|${ing.unit ?? ''}`;
-        const prev = map.get(key) ?? { name: cap(ing.name.trim()), unit: ing.unit, amount: 0, section: ing.section };
+        const label = ing.brand && ing.brand !== 'Genérico' ? `${ing.name.trim()} (${ing.brand})` : ing.name.trim();
+        const key = `${norm(label)}|${ing.unit ?? ''}`;
+        const prev = map.get(key) ?? { name: cap(label), unit: ing.unit, amount: 0, section: ing.section };
         prev.amount += ing.amount || 0;
         map.set(key, prev);
       }

@@ -48,7 +48,12 @@ const userSchema = new mongoose.Schema(
         name: String,
         type: { type: String }, // ojo: "type" anidado necesita esta forma
         description: String,
-        ingredients: [{ name: String, amount: Number, unit: String, quantity: String, section: String, _id: false }],
+        ingredients: [{
+          name: String, amount: Number, unit: String, quantity: String, section: String,
+          foodId: { type: mongoose.Schema.Types.ObjectId, ref: 'Food' }, brand: String,
+          per100: { calories: Number, protein: Number, carbs: Number, fat: Number },
+          baseUnit: String, unitName: String, unitGrams: Number, _id: false,
+        }],
         calories: Number,
         protein: Number,
         carbs: Number,

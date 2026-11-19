@@ -86,6 +86,17 @@ const ingredientIn = Joi.object({
   unit: Joi.string().max(20).allow(''),
   quantity: Joi.string().max(40).allow(''),
   section: Joi.string().max(40).allow(''),
+  foodId: Joi.string().hex().length(24),
+  brand: Joi.string().max(60).allow(''),
+  per100: Joi.object({
+    calories: Joi.number().min(0).max(900),
+    protein: Joi.number().min(0).max(100),
+    carbs: Joi.number().min(0).max(100),
+    fat: Joi.number().min(0).max(100),
+  }),
+  baseUnit: Joi.string().valid('g', 'ml'),
+  unitName: Joi.string().max(20).allow(''),
+  unitGrams: Joi.number().min(0).max(2000).allow(null),
 });
 
 const mealIn = Joi.object({
@@ -123,4 +134,22 @@ export const fridgeSchema = Joi.object({
 export const weightSchema = Joi.object({
   weightKg: Joi.number().min(30).max(300).required(),
   date: Joi.date().max('now'),
+});
+
+// ---------- Base de alimentos (valores por 100 g / 100 ml) ----------
+const SECTIONS = ['Verdulería', 'Carnicería y pescadería', 'Lácteos y huevos', 'Almacén', 'Panadería', 'Congelados', 'Otros'];
+export const foodItemSchema = Joi.object({
+  name: Joi.string().max(80).required(),
+  brand: Joi.string().max(60).empty('').default('Genérico'),
+  baseUnit: Joi.string().valid('g', 'ml').default('g'),
+  calories: Joi.number().min(0).max(900).required(),
+  protein: Joi.number().min(0).max(100).required(),
+  carbs: Joi.number().min(0).max(100).required(),
+  fat: Joi.number().min(0).max(100).required(),
+  fiber: Joi.number().min(0).max(100).allow(null),
+  sugar: Joi.number().min(0).max(100).allow(null),
+  sodiumMg: Joi.number().min(0).max(50000).allow(null),
+  unitName: Joi.string().max(20).allow(''),
+  unitGrams: Joi.number().min(0.1).max(2000).allow(null),
+  section: Joi.string().valid(...SECTIONS).default('Otros'),
 });

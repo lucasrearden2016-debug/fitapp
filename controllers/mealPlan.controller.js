@@ -2,6 +2,7 @@ import MealPlan from '../models/MealPlan.js';
 import User from '../models/User.js';
 import { calculateTargets, currentWeekStart, fitMeal, normalizeMeal, targetForType } from '../services/nutrition.js';
 import { buildShoppingList, buildWeek } from '../services/mealPlanner.js';
+import { countUses } from './food.controller.js';
 import { DAYS, estimateMeal, generateAlternative, generateFromFridge, generateRecipe } from '../services/aiMeals.js';
 
 const targetsOf = (user) => calculateTargets(user.profile, user.nutrition?.calorieAdjustment ?? 0);
@@ -104,7 +105,9 @@ export async function replace(req, res) {
   const next = req.body.fit === false
     ? { ...normalizeMeal(incoming), type: incoming.type || meal.type, eaten: meal.eaten }
     : { ...fitMeal(incoming, meal.calories), type: meal.type };
-  res.json(await replaceMeal(plan, day, index, { ...next, recipe: incoming.recipe }));
+  const result = await replaceMeal(plan, day, index, { ...next, recipe: incoming.recipe });
+  if (req.body.fit === false) await countUses([incoming]);
+  res.json(result);
 }
 
 // 🧊 ¿Qué cocino con lo que tengo?
@@ -158,7 +161,9 @@ export async function addMeal(req, res) {
   if (!plan) return;
   const day = getDay(plan, req, res);
   if (!day) return;
-  res.status(201).json(await pushMeal(plan, day, normalizeMeal(req.body.meal)));
+  const result = await pushMeal(plan, day, normalizeMeal(req.body.meal));
+  await countUses([req.body.meal]);
+  res.status(201).json(result);
 }
 
 export async function removeMeal(req, res) {

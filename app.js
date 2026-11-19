@@ -8,6 +8,7 @@ import authRoutes from './routes/auth.routes.js';
 import profileRoutes from './routes/profile.routes.js';
 import mealPlanRoutes from './routes/mealPlan.routes.js';
 import routineRoutes from './routes/routine.routes.js';
+import foodRoutes from './routes/food.routes.js';
 
 const app = express();
 
@@ -32,6 +33,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/profile', profileRoutes);
 app.use('/api/mealplans', mealPlanRoutes);
 app.use('/api/routines', routineRoutes);
+app.use('/api/foods', foodRoutes);
 
 app.use(notFound);
 app.use(errorHandler);
