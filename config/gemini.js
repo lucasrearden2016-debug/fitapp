@@ -1,4 +1,5 @@
 import { GoogleGenAI } from '@google/genai';
+import { currentLang } from '../i18n/context.js';
 
 // v1beta: la v1 no soporta systemInstruction ni responseSchema
 export const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY, apiVersion: 'v1beta' });
@@ -40,7 +41,15 @@ async function callModel(model, { system, prompt, schema, temperature }) {
 /**
  * Pide a Gemini una respuesta JSON que cumpla `schema` y la parsea.
  */
-export async function generateJSON({ system, prompt, schema, temperature = 0.7 }) {
+const LANG_RULE = {
+  es: 'Escribí todos los textos para el usuario en español rioplatense.',
+  en: 'Write every user-facing text (names, descriptions, steps, tips, notes, summaries) in English.',
+  pt: 'Escreva todos os textos para o usuário (nomes, descrições, passos, dicas, notas, resumos) em português do Brasil.',
+};
+
+export async function generateJSON({ system: baseSystem, prompt, schema, temperature = 0.7 }) {
+  // Idioma del usuario + las claves internas siguen en español para que la app las reconozca
+  const system = `${baseSystem}\n\n${LANG_RULE[currentLang()]}\nLos campos "type" (desayuno, almuerzo, merienda, cena, colación, snack), "unit" y "section" se dejan EXACTAMENTE con los valores en español indicados, sin traducir.`;
   let lastError;
   for (const model of MODELS) {
     try {

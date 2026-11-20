@@ -3,6 +3,7 @@ import express from 'express';
 import cors from 'cors';
 import { connectDB } from './config/db.js';
 import { generalLimiter } from './middlewares/rateLimit.js';
+import { language } from './middlewares/lang.js';
 import { errorHandler, notFound } from './middlewares/errorHandler.js';
 import authRoutes from './routes/auth.routes.js';
 import profileRoutes from './routes/profile.routes.js';
@@ -19,6 +20,7 @@ const origins = (process.env.CORS_ORIGIN ?? '')
   .filter(Boolean);
 app.use(cors({ origin: origins.length === 0 || origins.includes('*') ? '*' : origins }));
 app.use(express.json({ limit: '1mb' }));
+app.use(language);
 
 // Conexión a Mongo cacheada (sirve tanto en local como en serverless)
 app.use(async (_req, _res, next) => {

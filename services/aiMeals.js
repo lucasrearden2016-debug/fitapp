@@ -56,7 +56,7 @@ const dayOut = {
 
 // ---------- Contexto común ----------
 
-const SYSTEM = `Sos un nutricionista deportivo que arma comidas prácticas y ricas, en español rioplatense.
+const SYSTEM = `Sos un nutricionista deportivo que arma comidas prácticas y ricas.
 Reglas:
 - Respetás estrictamente restricciones y alergias, y nunca usás lo que al usuario no le gusta.
 - Cada comida debe acercarse a SU objetivo de macros (±10%). Para subir proteína usá carnes magras, huevo, lácteos, legumbres, atún.

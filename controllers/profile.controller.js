@@ -19,7 +19,7 @@ export async function saveOnboarding(req, res) {
   const update = { profile, foods, ...(gym && { gym }), onboarded: true };
   // Si cambia el objetivo, el ajuste por peso arranca de cero
   if (prev?.profile?.goal && prev.profile.goal !== profile.goal) {
-    update.nutrition = { calorieAdjustment: 0, lastAdjustmentAt: null, lastRate: null, lastMessage: null };
+    update.nutrition = { calorieAdjustment: 0, lastAdjustmentAt: null, lastRate: null, lastMessage: null, lastStatus: null, lastChange: 0 };
   }
   const user = await User.findByIdAndUpdate(req.user.id, update, { returnDocument: 'after', runValidators: true }).lean();
   res.json({ ...user, targets: targetsOf(user) });
@@ -94,6 +94,8 @@ async function weightResponse(user) {
     targets: targetsOf(user),
     adjustment: user.nutrition?.calorieAdjustment ?? 0,
     rate: user.nutrition?.lastRate ?? null,
+    status: user.nutrition?.lastStatus ?? evaluateWeight(logs, goal).status,
+    change: user.nutrition?.lastChange ?? 0,
     message: user.nutrition?.lastMessage ?? evaluateWeight(logs, goal).message,
     expected: evaluateWeight([], goal).expected,
   };
@@ -124,6 +126,8 @@ export async function addWeight(req, res) {
     lastAdjustmentAt: result.change ? new Date() : n.lastAdjustmentAt,
     lastRate: result.rate,
     lastMessage: result.message,
+    lastStatus: result.status,
+    lastChange: result.change,
   };
   await user.save();
   res.status(201).json({ ...(await weightResponse(user)), change: result.change });
@@ -133,4 +137,14 @@ export async function removeWeight(req, res) {
   await WeightLog.deleteOne({ user: req.user.id, date: startOfDayUTC(new Date(req.params.date)) });
   const user = await User.findById(req.user.id);
   res.json(await weightResponse(user));
+}
+
+// Elegir o cambiar el nombre de usuario (para entrar sin escribir el email)
+export async function setUsername(req, res) {
+  const { username } = req.body;
+  if (await User.exists({ username, _id: { $ne: req.user.id } })) {
+    return res.status(409).json({ message: 'Ese nombre de usuario ya está tomado' });
+  }
+  await User.updateOne({ _id: req.user.id }, { username });
+  res.json({ username });
 }

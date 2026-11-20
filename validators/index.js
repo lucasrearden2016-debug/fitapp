@@ -1,15 +1,25 @@
 import Joi from 'joi';
 
+const username = Joi.string()
+  .lowercase()
+  .pattern(/^[a-z0-9._]{3,20}$/)
+  .messages({ 'string.pattern.base': 'El usuario debe tener de 3 a 20 caracteres: letras, números, punto o guion bajo' });
+
 export const registerSchema = Joi.object({
   name: Joi.string().min(2).max(50).required(),
+  username: username.required(),
   email: Joi.string().email().required(),
   password: Joi.string().min(8).max(100).required(),
 });
 
+// Se puede entrar con usuario o con email (`email` queda por compatibilidad)
 export const loginSchema = Joi.object({
-  email: Joi.string().email().required(),
+  identifier: Joi.string().max(100),
+  email: Joi.string().max(100),
   password: Joi.string().required(),
-});
+}).or('identifier', 'email');
+
+export const usernameSchema = Joi.object({ username: username.required() });
 
 const food = Joi.object({
   name: Joi.string().max(60).required(),

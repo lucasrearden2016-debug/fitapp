@@ -188,6 +188,7 @@ export function evaluateWeight(logs, goal, currentAdjustment = 0, lastAdjustment
       rate: null,
       expected,
       change: 0,
+      status: 'collecting',
       message: 'Registrá tu peso una vez por semana (mismo día, en ayunas). Con 2 semanas de datos empezamos a ajustar tus calorías.',
     };
   }
@@ -208,13 +209,16 @@ export function evaluateWeight(logs, goal, currentAdjustment = 0, lastAdjustment
   change = Math.max(-MAX_ADJ, Math.min(MAX_ADJ, currentAdjustment + change)) - currentAdjustment;
 
   const fmt = (n) => `${n > 0 ? '+' : ''}${n}%`;
+  // status: lo usa el front para armar el mensaje en el idioma del usuario
+  let status = 'ok';
+  if (!(rate >= expected[0] && rate <= expected[1])) status = change ? 'adjusted' : !canAdjust ? 'waiting' : 'max';
   let message;
   if (rate >= expected[0] && rate <= expected[1]) message = `Vas ${fmt(rate)} por semana: dentro de lo esperado (${fmt(expected[0])} a ${fmt(expected[1])}). Seguimos igual.`;
   else if (change) message = `Vas ${fmt(rate)} por semana y lo esperado es ${fmt(expected[0])} a ${fmt(expected[1])}. Ajustamos tus calorías ${change > 0 ? '+' : ''}${change} kcal/día.`;
   else if (!canAdjust) message = `Vas ${fmt(rate)} por semana. Ya ajustamos hace menos de 7 días: esperamos a ver el efecto.`;
   else message = `Vas ${fmt(rate)} por semana. Llegamos al ajuste máximo (±${MAX_ADJ} kcal); conviene revisar actividad o adherencia.`;
 
-  return { rate, expected, change, message };
+  return { rate, expected, change, status, message };
 }
 
 // Normaliza una comida cargada a mano: texto de cantidades y números redondos

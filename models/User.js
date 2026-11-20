@@ -13,6 +13,8 @@ const userSchema = new mongoose.Schema(
   {
     name: { type: String, required: true, trim: true },
     email: { type: String, required: true, unique: true, lowercase: true, trim: true },
+    // Para entrar con usuario o email. sparse: las cuentas viejas pueden no tenerlo
+    username: { type: String, unique: true, sparse: true, lowercase: true, trim: true },
     password: { type: String, required: true, select: false },
     onboarded: { type: Boolean, default: false },
 
@@ -40,6 +42,8 @@ const userSchema = new mongoose.Schema(
       lastAdjustmentAt: Date,
       lastRate: Number, // % de peso por semana en la última evaluación
       lastMessage: String,
+      lastStatus: String, // collecting | ok | adjusted | waiting | max
+      lastChange: Number,
     },
 
     // Comidas marcadas con ⭐ (la IA las repite en próximos planes)

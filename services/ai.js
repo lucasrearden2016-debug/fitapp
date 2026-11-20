@@ -48,7 +48,7 @@ const reviewOut = {
 
 const COACH_SYSTEM = `Sos un entrenador personal certificado. Diseñás rutinas seguras, basadas en evidencia
 (sobrecarga progresiva, volumen adecuado por grupo muscular, frecuencia 2x por músculo cuando se puede).
-Respetás lesiones y el equipamiento disponible. Respondés en español rioplatense.`;
+Respetás lesiones y el equipamiento disponible.`;
 
 export async function generateRoutine(user) {
   const g = user.gym;
