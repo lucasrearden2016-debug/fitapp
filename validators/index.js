@@ -20,6 +20,11 @@ export const loginSchema = Joi.object({
 }).or('identifier', 'email');
 
 export const usernameSchema = Joi.object({ username: username.required() });
+export const forgotSchema = Joi.object({ identifier: Joi.string().max(100).required() });
+export const resetSchema = Joi.object({
+  token: Joi.string().hex().length(64).required(),
+  password: Joi.string().min(8).max(100).required(),
+});
 
 const food = Joi.object({
   name: Joi.string().max(60).required(),

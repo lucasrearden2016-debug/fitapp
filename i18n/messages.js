@@ -27,6 +27,8 @@ const MESSAGES = {
   'Ya existe otro alimento con ese nombre y marca': ['Another food with that name and brand already exists', 'Já existe outro alimento com esse nome e marca'],
   'Ya existe un registro con ese valor': ['A record with that value already exists', 'Já existe um registro com esse valor'],
   'Error interno': ['Internal error', 'Erro interno'],
+    'Si la cuenta existe, te mandamos un email con el link': ['If the account exists, we sent you an email with the link', 'Se a conta existir, enviamos um e-mail com o link'],
+  'El link no es válido o ya venció. Pedí uno nuevo.': ['The link is invalid or expired. Request a new one.', 'O link é inválido ou expirou. Peça um novo.'],
   'La IA no está disponible en este momento.': ['The AI is not available right now.', 'A IA não está disponível no momento.'],
   'Se terminó el cupo diario de la IA. Probá más tarde.': ['The daily AI quota ran out. Try again later.', 'A cota diária da IA acabou. Tente mais tarde.'],
   'La IA devolvió una respuesta inválida, probá de nuevo': ['The AI returned an invalid response, try again', 'A IA devolveu uma resposta inválida, tente de novo'],

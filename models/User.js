@@ -16,6 +16,9 @@ const userSchema = new mongoose.Schema(
     // Para entrar con usuario o email. sparse: las cuentas viejas pueden no tenerlo
     username: { type: String, unique: true, sparse: true, lowercase: true, trim: true },
     password: { type: String, required: true, select: false },
+        // Recuperar contraseña: se guarda el hash del token, nunca el token
+    resetTokenHash: { type: String, select: false },
+    resetTokenExpires: { type: Date, select: false },
     onboarded: { type: Boolean, default: false },
 
     // Encuesta principal
