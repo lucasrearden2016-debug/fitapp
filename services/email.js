@@ -2,6 +2,11 @@ import nodemailer from 'nodemailer';
 
 // SMTP genérico: sirve Gmail (contraseña de aplicación), Resend, Brevo, etc.
 // Sin SMTP_HOST (en local) el mail se imprime en la consola en vez de enviarse.
+console.log('SMTP check →', {
+  user: JSON.stringify(process.env.SMTP_USER),
+  passLength: process.env.SMTP_PASS?.length,
+  passHasSpaces: /\s/.test(process.env.SMTP_PASS ?? ''),
+});
 const transport = process.env.SMTP_HOST
   ? nodemailer.createTransport({
       host: process.env.SMTP_HOST,
