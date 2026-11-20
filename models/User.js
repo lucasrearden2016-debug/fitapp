@@ -16,10 +16,23 @@ const userSchema = new mongoose.Schema(
     // Para entrar con usuario o email. sparse: las cuentas viejas pueden no tenerlo
     username: { type: String, unique: true, sparse: true, lowercase: true, trim: true },
     password: { type: String, required: true, select: false },
-        // Recuperar contraseña: se guarda el hash del token, nunca el token
+    // Recuperar contraseña: se guarda el hash del token, nunca el token
     resetTokenHash: { type: String, select: false },
     resetTokenExpires: { type: Date, select: false },
     onboarded: { type: Boolean, default: false },
+
+    // Planes: 7 días de prueba Premium + suscripción (la completa el webhook del proveedor de pagos)
+    trialEndsAt: Date,
+    subscription: {
+      status: { type: String, enum: ['none', 'active', 'canceled', 'past_due'], default: 'none' },
+      interval: { type: String, enum: ['month', 'year'] },
+      provider: String, // 'paddle' | 'polar' | 'revenuecat'...
+      customerId: String,
+      subscriptionId: String,
+      currentPeriodEnd: Date, // Premium hasta esta fecha (si cancela, lo conserva hasta acá)
+    },
+    // Tope diario de IA (protege el costo aunque sea Premium)
+    aiUsage: { day: String, count: { type: Number, default: 0 } },
 
     // Encuesta principal
     profile: {

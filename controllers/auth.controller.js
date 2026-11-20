@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken';
 import crypto from 'node:crypto';
 import User from '../models/User.js';
 import { sendResetEmail } from '../services/email.js';
+import { TRIAL_DAYS } from '../services/plan.js';
 
 const sign = (user) =>
   jwt.sign(
@@ -15,7 +16,8 @@ export async function register(req, res) {
   const { name, email, username, password } = req.body;
   if (await User.exists({ email })) return res.status(409).json({ message: 'El email ya está registrado' });
   if (await User.exists({ username })) return res.status(409).json({ message: 'Ese nombre de usuario ya está tomado' });
-  const user = await User.create({ name, email, username, password: await bcrypt.hash(password, 10) });
+  const trialEndsAt = new Date(Date.now() + TRIAL_DAYS * 24 * 60 * 60 * 1000);
+  const user = await User.create({ name, email, username, password: await bcrypt.hash(password, 10), trialEndsAt });
   res.status(201).json({ token: sign(user), onboarded: false });
 }
 
