@@ -18,21 +18,21 @@ const transport = process.env.SMTP_HOST
 
 const TEXTS = {
   es: {
-    subject: 'Recuperá tu contraseña de fitapp',
+    subject: 'Recuperá tu contraseña de FittingUp',
     hi: 'Hola',
     body: 'Pediste cambiar tu contraseña. Tocá el botón para elegir una nueva (el link vence en 30 minutos).',
     button: 'Elegir nueva contraseña',
     ignore: 'Si no fuiste vos, ignorá este mail: tu contraseña no cambia.',
   },
   en: {
-    subject: 'Reset your fitapp password',
+    subject: 'Reset your FittingUp password',
     hi: 'Hi',
     body: 'You asked to change your password. Tap the button to choose a new one (the link expires in 30 minutes).',
     button: 'Choose new password',
     ignore: "If it wasn't you, ignore this email: your password won't change.",
   },
   pt: {
-    subject: 'Recupere sua senha do fitapp',
+    subject: 'Recupere sua senha do FittingUp',
     hi: 'Olá',
     body: 'Você pediu para trocar sua senha. Toque no botão para escolher uma nova (o link expira em 30 minutos).',
     button: 'Escolher nova senha',
@@ -44,7 +44,7 @@ export async function sendResetEmail({ to, name, link, lang = 'es' }) {
   const t = TEXTS[lang] ?? TEXTS.es;
   const html = `
   <div style="font-family:-apple-system,Segoe UI,Helvetica,Arial,sans-serif;max-width:480px;margin:0 auto;padding:24px;color:#37352f">
-    <div style="font-weight:700;font-size:18px;margin-bottom:24px">fitapp</div>
+    <div style="font-weight:700;font-size:18px;margin-bottom:24px">FittingUp</div>
     <p>${t.hi} ${name},</p>
     <p>${t.body}</p>
     <p style="margin:28px 0">
@@ -53,7 +53,7 @@ export async function sendResetEmail({ to, name, link, lang = 'es' }) {
     <p style="color:#787774;font-size:13px">${t.ignore}</p>
   </div>`;
   const info = await transport.sendMail({
-    from: process.env.MAIL_FROM || 'fitapp <no-reply@fitapp.local>',
+    from: process.env.MAIL_FROM || 'FittingUp <no-reply@FittingUp.local>',
     to,
     subject: t.subject,
     html,
